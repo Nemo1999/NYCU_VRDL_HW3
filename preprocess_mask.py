@@ -21,7 +21,7 @@ def preprocess_mask(train_set_path="dataset/train"):
             mask_rle = encode(mask_img) 
             bbox = toBbox(mask_rle)
             annotations.append({
-                "bbox": bbox,
+                "bbox": bbox.tolist(),
                 "bbox_mode": BoxMode.XYWH_ABS,
                 "category_id": 0,
                 "segmentation": mask_rle,

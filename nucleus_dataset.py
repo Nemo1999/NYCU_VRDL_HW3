@@ -1,7 +1,7 @@
 import os
 import pickle
 
-def nucleus_dataset(train_set_path="dataset/train"):
+def nucleus_dataset(train_set_path="dataset/train", mode="train"):
     """
     Returns a list of dict, representing each training image
     """
@@ -20,7 +20,10 @@ def nucleus_dataset(train_set_path="dataset/train"):
             "annotations": annotations
         }
         train_set.append(img_dict)
-    return train_set
+    if mode == "train":
+        return train_set[:int(len(train_set) * 0.8)]
+    else:
+        return train_set[int(len(train_set) * 0.8):]
 
 # test code
 if __name__ == "__main__":
