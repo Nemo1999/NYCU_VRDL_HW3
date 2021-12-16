@@ -34,5 +34,6 @@ reproduce:
 	@echo "Downloading model weights from google drive..." 
 	gdown https://drive.google.com/uc?id=1_57UohNcPW0IyWYihwt3lLh3WVwZD4az -O pretrained_models/mask_rcnn_r101_fpn_1x.pth
 	@echo "Inferencing on test set..."
+	mkdir -p output/masked_rcnn_r101_fpn_1x/
 	python train.py --model_path pretrained_models/mask_rcnn_r101_fpn_1x.pth --outdir output/masked_rcnn_r101_fpn_1x --eval 
 	@echo "Result is saved in output/masked_rcnn_r101_fpn_1x/answer.json"
