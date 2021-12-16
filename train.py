@@ -77,7 +77,7 @@ cfg.INPUT.MIN_SIZE_TRAIN = (512,512)
 cfg.INPUT.RANDOM_FLIP = "horizontal"
 cfg.INPUT.CROP.ENABLED = True
 cfg.INPUT.CROP.TYPE = "relative_range"
-cfg.INPUT.CROP.SIZE = (0.3, 0.3) # optionally (0.5, 0.5) or (0.2, 0.2)
+cfg.INPUT.CROP.SIZE = (0.7, 0.7) # optionally (0.5, 0.5) or (0.2, 0.2) or (0.3, 0.3)
 cfg.MODEL.ROI_MASK_HEAD.POOLER_RESOLUTION = 28 # originally 14
 cfg.SOLVER.CHECKPOINT_PERIOD = 250 # save checkpoint every 250 iterations
 #print(cfg.model)
