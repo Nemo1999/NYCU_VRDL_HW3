@@ -30,7 +30,7 @@ train:
 
 reproduce:
 	@echo "Reproducing results..."
-	mkdir pretrained_models
+	mkdir -p pretrained_models
 	@echo "Downloading model weights from google drive..." 
 	gdown https://drive.google.com/uc?id=1_57UohNcPW0IyWYihwt3lLh3WVwZD4az -O pretrained_models/mask_rcnn_r101_fpn_1x.pth
 	@echo "Inferencing on test set..."
