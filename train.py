@@ -16,11 +16,7 @@ from detectron2 import model_zoo
 from detectron2.config import LazyConfig
 from tqdm import tqdm
 
-DatasetCatalog.register("nucleus_train", lambda : nucleus_dataset(mode="train"))
-MetadataCatalog.get("nucleus_train").set(thing_classes=["nucleus"]) # set the thing_classes
-DatasetCatalog.register("nucleus_val", lambda : nucleus_dataset(mode="validation"))
-MetadataCatalog.get("nucleus_val").set(thing_classes=["nucleus"]) # set the thing_classes
-DatasetCatalog.register("nucleus_test", lambda : nucleus_dataset(mode="test"))
+
 
 nucleus_metadata = MetadataCatalog.get("nucleus_train")
 nucleus_metadata = MetadataCatalog.get("nucleus_val")
@@ -45,7 +41,7 @@ parser.add_argument("--outdir", type=str, default="default", help="Output direct
 parser.add_argument("--eval", default=False, action="store_true", help="Evaluate the model")
 parser.add_argument("--model_path", type=str, default="", help="Path to the model")
 parser.add_argument("--config_path", type=str, default="", help="Path to the config")
-parser.add_argument("--visulize", default=False, action="store_true", help="Visualize Evaluation Results")
+parser.add_argument("--visualize", default=False, action="store_true", help="Visualize Evaluation Results")
 
 cmd_args = parser.parse_args()
 
@@ -59,20 +55,32 @@ if not cmd_args.resume and not cmd_args.eval:
 else:
     cfg.OUTPUT_DIR = cmd_args.outdir
 
-#cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_regnetx_4gf_dds_fpn_1x.py"))
-cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
+
+cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
+#cfg = LazyConfig.load("detectron2_configs/new_baselines/mask_rcnn_R_101_FPN_100ep_LSJ.py")
+
 cfg.DATASETS.TRAIN = ("nucleus_train",)
 cfg.DATASETS.TEST = ("nucleus_val",)
 cfg.DATALOADER.NUM_WORKERS = 2
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-#cfg.MODEL.WEIGHTS = "Pretrained/model_final_f1362d.pkl"
-cfg.SOLVER.IMS_PER_BATCH = 2
-cfg.SOLVER.BASE_LR = 0.00025
-cfg.SOLVER.MAX_ITER = 10000
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 625
+
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml")  # Let training initialize from model zoo
+#cfg.MODEL.WEIGHTS = "https://dl.fbaipublicfiles.com/detectron2/COCO-Detection/faster_rcnn_R_101_FPN_3x/137851257/model_final_f6e8b1.pkl"
+cfg.SOLVER.IMS_PER_BATCH = 1 # originally 16
+cfg.SOLVER.BASE_LR = 0.00125 # originally 0.02
+cfg.SOLVER.MAX_ITER = 3000
+cfg.SOLVER.STEPS = (2000, 2750)
+cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = 512 # original is 256
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.INPUT.MASK_FORMAT = "bitmask"  # alternative: "polygon"
-
+cfg.INPUT.MIN_SIZE_TRAIN = (512,512)
+cfg.INPUT.RANDOM_FLIP = "horizontal"
+cfg.INPUT.CROP.ENABLED = True
+cfg.INPUT.CROP.TYPE = "relative_range"
+cfg.INPUT.CROP.SIZE = (0.3, 0.3) # optionally (0.5, 0.5) or (0.2, 0.2)
+cfg.MODEL.ROI_MASK_HEAD.POOLER_RESOLUTION = 28 # originally 14
+cfg.SOLVER.CHECKPOINT_PERIOD = 250 # save checkpoint every 250 iterations
+#print(cfg.model)
 
 #cfg = LazyConfig.load(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_regnetx_4gf_dds_fpn_1x.py"))
 
@@ -82,11 +90,11 @@ if cmd_args.eval == False:
     trainer.train()
 else:
     cfg.MODEL.WEIGHTS = os.path.join(cmd_args.model_path)  # path to the model we just trained
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.01   # set a custom testing threshold
+    #cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.01   # set a custom testing threshold
     predictor = DefaultPredictor(cfg)
     # Load and display evaluation results
     dataset_dicts = nucleus_dataset(mode="train")
-    if cmd_args.visulize:
+    if cmd_args.visualize:
         for d in dataset_dicts[:3]:    
             img = cv2.imread(d["file_name"])
             outputs = predictor(img)  # format is documented at https://detectron2.readthedocs.io/tutorials/models.html#model-output-format

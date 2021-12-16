@@ -6,6 +6,7 @@ import tqdm
 import pickle
 from detectron2.structures import BoxMode
 
+
 def preprocess_mask(train_set_path="dataset/train"):
     """
     Compress the mask images into rle format, save the annotations for each image in a pickle file.
